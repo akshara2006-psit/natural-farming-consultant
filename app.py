@@ -51,24 +51,35 @@ with st.expander("🔄 Multilevel Cropping Advice"):
     st.write("Suggested: Layer 1: Papaya | Layer 2: Turmeric | Layer 3: Ginger")
 
 
-
 if (audio or img_file):
     with st.spinner("AI soch raha hai..."):
         audio_bits = audio['bytes'] if audio else None
+        
         response_text, transcribed_text = query_farming_expert(api_keys, audio_bits, img_file, w_info, m_info)
         
         if transcribed_text and transcribed_text != "Image Analysis":
             st.info(f"👂 What I heard: {transcribed_text}")
         
+        
         st.subheader("Consultant's Advice:")
         st.success(response_text) 
 
+   
         try:
-            lang = 'hi' if any('\u0900' <= c <= '\u097F' for c in response_text) else 'en'
-            # CLEAN text use kijiye voice ke liye
-            tts = gTTS(text=clean_voice_text, lang=lang) 
-            speech_fp = io.BytesIO()
-            tts.write_to_fp(speech_fp)
-            st.audio(speech_fp, format='audio/mp3', autoplay=True)
-        except:
-            pass
+            
+            clean_voice_text = response_text.replace("*", "").replace("#", "")
+            
+            lang = 'hi' if any('\u0900' <= c <= '\u097F' for c in clean_voice_text) else 'en'
+            
+            if clean_voice_text.strip():
+              
+                tts = gTTS(text=clean_voice_text, lang=lang) 
+                speech_fp = io.BytesIO()
+                tts.write_to_fp(speech_fp)
+                
+               
+                st.audio(speech_fp, format='audio/mp3', autoplay=True)
+        except Exception as e:
+           
+            st.error(f"Awaaz mein samasya: {e}")
+    
