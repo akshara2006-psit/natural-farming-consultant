@@ -3,14 +3,16 @@ from google.genai import types
 from groq import Groq
 import io
 
+# farming_logic.py - UPDATED PROMPT SECTION
+
 def query_farming_expert(api_keys, audio_bytes, image_file, weather_data, market_data):
     groq_client = Groq(api_key=api_keys['groq'])
     
-    # Context data for the AI
+    # Context data
     w_ctx = f"{weather_data['temp']}°C, {weather_data['desc']}"
     m_ctx = ", ".join([f"{k}: ₹{v}" for k, v in market_data.items()])
 
-    # 1. Transcription (Voice to Text)
+    # 1. Transcription logic (keeps same)
     user_query = ""
     if audio_bytes:
         try:
@@ -21,54 +23,57 @@ def query_farming_expert(api_keys, audio_bytes, image_file, weather_data, market
                 model="whisper-large-v3",
                 response_format="text"
             )
-        except Exception as e:
-            user_query = "Audio recording error."
+        except:
+            user_query = ""
 
-    if not user_query and not image_file:
-        return "I didn't hear a question. Please click the mic and speak clearly.", ""
-
-    # 2. UPDATED SYSTEM PROMPT WITH FORMATTING RULES
+    # 2. UPDATED SYSTEM PROMPT (Strict Language Rules)
     system_prompt = f"""
-    You are an expert Natural Farming Consultant.
-    
-    FARMER'S QUESTION: "{user_query}"
-    
-    CONTEXT:
-    - Weather: {w_ctx}
-    - Market Prices: {m_ctx}
+You are an expert Natural Farming Consultant.
+Respond ONLY in Hindi (Devanagari script).
 
-    INSTRUCTIONS:
-    1. Only suggest natural/organic farming (Jeevamrutham, Neem Astra, etc.).
-    2. Answer the farmer's question directly. 
-    
-    FORMATTING RULES (IMPORTANT FOR MOBILE):
-    - Use bullet points (•) for any steps, ingredients, or lists.
-    - Use **bold text** for key organic terms (e.g., **Jeevamrutham**, **Bijamrutham**).
-    - Keep paragraphs short and use simple language.
-    - Respond in the language the farmer used (Hindi or English).
-    """
+FORMATTING RULES:
+1. Use very few asterisks. Only bold the most important words.
+2. Do not use complex markdown symbols.
+3. Use simple bullet points (•) for steps.
+4. If you see an image, identify the disease and give a natural cure in Hindi.
 
-    # 3. Generate AI Response
-    try:
-        if image_file:
-            # Gemini for Vision
-            gemini_client = genai.Client(api_key=api_keys['gemini'])
-            response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash-lite",
-                contents=[system_prompt, types.Part.from_bytes(data=image_file.getvalue(), mime_type="image/jpeg")]
-            )
-            return response.text, "Image Analysis"
-        else:
-            # Groq for Voice
+Context: Weather {w_ctx}, Market {m_ctx}.
+"""
+
+    # 3. Vision Detection
+    if image_file:
+        client = genai.Client(api_key=api_keys['gemini'])
+        model_options = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-flash-latest"]
+        
+        for model_id in model_options:
+            try:
+                # We add the language instruction directly to the content parts as well
+                response = client.models.generate_content(
+                    model=model_id,
+                    contents=[
+                        system_prompt,
+                        "Kripya is photo ko dekhein aur bimari ka upchaar HINDI mein batayein:", 
+                        types.Part.from_bytes(data=image_file.getvalue(), mime_type="image/jpeg")
+                    ]
+                )
+                return response.text, "Image Analysis"
+            except Exception as e:
+                if "429" in str(e): continue
+                else: return f"Error: {str(e)}", "Image Analysis"
+        
+        return "Shama karein, AI abhi vyast hai. Neem ka tel use karein.", "Image Analysis"
+
+    # 4. Voice logic (keeps same)
+    # ... rest of your code
+    # 4. Voice/Text (Groq)
+    else:
+        try:
+            groq_client = Groq(api_key=api_keys['groq'])
             completion = groq_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_query}
-                ],
+                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_query}],
                 temperature=0.2
             )
             return completion.choices[0].message.content, user_query
-            
-    except Exception as e:
-        return f"AI Error: {str(e)}", user_query
+        except:
+            return "AI Expert is busy. Please use Jeevamrutham for soil health.", "General Query"

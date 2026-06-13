@@ -54,34 +54,30 @@ with st.expander("🔄 Multilevel Cropping Advice"):
 
 # --- PROCESSING LOGIC ---
 # --- PROCESSING LOGIC (Around line 55 in your file) ---
-if (audio or img_file):
-    with st.spinner("AI is thinking..."):
-        audio_bits = audio['bytes'] if audio else None
-        
-        # We catch TWO variables here
-        result = query_farming_expert(api_keys, audio_bits, img_file, w_info, m_info)
-        
-        # Safety check for the return values
-        if isinstance(result, tuple) and len(result) == 2:
-            response_text, transcribed_text = result
-        else:
-            response_text = result
-            transcribed_text = ""
+# --- app.py ke andar PROCESSING block mein ---
 
-        # Display what the AI heard (Empathy/UX Score!)
+if (audio or img_file):
+    with st.spinner("AI soch raha hai..."):
+        audio_bits = audio['bytes'] if audio else None
+        response_text, transcribed_text = query_farming_expert(api_keys, audio_bits, img_file, w_info, m_info)
+        
         if transcribed_text and transcribed_text != "Image Analysis":
             st.info(f"👂 What I heard: {transcribed_text}")
         
         st.subheader("Consultant's Advice:")
-        st.success(response_text)
+        st.success(response_text) # Yahan text bold dikhega (Markdown support)
         
-        # Text to Speech
+        # --- VOICE CLEANUP START ---
+        # Voice ke liye asterisks (*) ko hata dete hain taaki wo "star" na bole
+        clean_voice_text = response_text.replace("*", "") 
+        # --- VOICE CLEANUP END ---
+
         try:
-            # Detect Hindi characters to set gTTS language
             lang = 'hi' if any('\u0900' <= c <= '\u097F' for c in response_text) else 'en'
-            tts = gTTS(text=response_text, lang=lang)
+            # CLEAN text use kijiye voice ke liye
+            tts = gTTS(text=clean_voice_text, lang=lang) 
             speech_fp = io.BytesIO()
             tts.write_to_fp(speech_fp)
             st.audio(speech_fp, format='audio/mp3', autoplay=True)
-        except Exception as e:
-            st.error(f"TTS Error: {e}")
+        except:
+            pass
