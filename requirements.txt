@@ -1,0 +1,6 @@
+streamlit
+google-genai
+groq
+streamlit-mic-recorder
+gTTS
+requests
