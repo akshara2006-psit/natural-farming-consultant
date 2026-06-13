@@ -3,16 +3,16 @@ from google.genai import types
 from groq import Groq
 import io
 
-# farming_logic.py - UPDATED PROMPT SECTION
+
 
 def query_farming_expert(api_keys, audio_bytes, image_file, weather_data, market_data):
     groq_client = Groq(api_key=api_keys['groq'])
     
-    # Context data
+    
     w_ctx = f"{weather_data['temp']}°C, {weather_data['desc']}"
     m_ctx = ", ".join([f"{k}: ₹{v}" for k, v in market_data.items()])
 
-    # 1. Transcription logic (keeps same)
+ 
     user_query = ""
     if audio_bytes:
         try:
@@ -26,7 +26,7 @@ def query_farming_expert(api_keys, audio_bytes, image_file, weather_data, market
         except:
             user_query = ""
 
-    # 2. UPDATED SYSTEM PROMPT (Strict Language Rules)
+    
     system_prompt = f"""
 You are an expert Natural Farming Consultant.
 Respond ONLY in Hindi (Devanagari script).
@@ -40,14 +40,14 @@ FORMATTING RULES:
 Context: Weather {w_ctx}, Market {m_ctx}.
 """
 
-    # 3. Vision Detection
+
     if image_file:
         client = genai.Client(api_key=api_keys['gemini'])
         model_options = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-flash-latest"]
         
         for model_id in model_options:
             try:
-                # We add the language instruction directly to the content parts as well
+                
                 response = client.models.generate_content(
                     model=model_id,
                     contents=[
@@ -63,9 +63,7 @@ Context: Weather {w_ctx}, Market {m_ctx}.
         
         return "Shama karein, AI abhi vyast hai. Neem ka tel use karein.", "Image Analysis"
 
-    # 4. Voice logic (keeps same)
-    # ... rest of your code
-    # 4. Voice/Text (Groq)
+
     else:
         try:
             groq_client = Groq(api_key=api_keys['groq'])
