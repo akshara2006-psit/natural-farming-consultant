@@ -2,8 +2,9 @@
 
 #  Kisan-Mitra: Multilevel Natural Farming AI Consultant
 ### *Empowering the transition to chemical-free agriculture through Voice-First Intelligence.*
-
-
+---
+**LIVE URL**  -> https://natural-farming-consultant-lrd8xmzdumyht2j36r8arg.streamlit.app/
+--
 ##  Project Vision
 Transitioning from chemical to **Natural Farming (ZBNF/KNF)** is a high-risk journey for farmers. Lack of immediate guidance during pest attacks often leads them back to harmful chemicals. **Kisan-Mitra** (Farmer's Friend) provides a voice-first, multi-modal AI consultant that delivers instant, organic solutions based on real-time weather, market trends, and visual crop diagnostics.
 
