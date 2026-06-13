@@ -83,5 +83,7 @@ The system utilizes **Strict Prompt Engineering** to ensure agricultural safety:
    ```
 
 ---
+# Mobile Optimised
+ the app was tested on a mobile device to ensure farmers can use it easily in the field.
 
 
