@@ -60,7 +60,7 @@ The system utilizes **Strict Prompt Engineering** to ensure agricultural safety:
 
 1. **Clone the Project:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/kisan-mitra.git
+   git clone  https://github.com/akshara2006-psit/natural-farming-consultant
    cd kisan-mitra
    ```
 
